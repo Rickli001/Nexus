@@ -1,0 +1,125 @@
+import streamlit as st
+import os
+import time
+import stripe
+from openai import OpenAI
+
+# --- INICIALIZAÇÃO DE CLIENTES REAIS ---
+# O Streamlit buscará automaticamente as chaves nas variáveis de ambiente da Vercel
+try:
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    stripe.api_key = os.environ.get("STRIPE_API_KEY")
+except:
+    st.error("⚠️ Erro: Chaves de API não configuradas nas Variáveis de Ambiente.")
+
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "DIO_WORLD_123")
+
+# --- LÓGICA DE ESTADO ---
+if 'user_role' not in st.session_state:
+    st.session_state.user_role = "User"
+if 'propostas' not in st.session_state:
+    st.session_state.propostas = []
+
+# --- ESTILO VISUAL (Sutil Anime) ---
+st.markdown("""
+    <style>
+    .stApp { background-color: #050505; color: #e0e0e0; }
+    .proposal-box { border-left: 5px solid #6200ee; background: #111; padding: 20px; margin: 10px 0; }
+    .ai-tag { color: #00FFFF; font-family: 'Orbitron', sans-serif; font-size: 12px; }
+    /* Efeito sutil: Estrela de JoJo no Avatar */
+    .avatar-jojo { border: 2px solid #FFD700; border-radius: 50%; width: 40px; box-shadow: 0 0 5px #FFD700; }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- FUNÇÃO DE IA REAL: JULGAMENTO DE PROPOSTA ---
+def analisar_proposta_com_gpt(nome, descricao):
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "Você é a Aura IA, o Stand de moderação do Nexus. Analise se a proposta de servidor é viável, se tem potencial de engajamento e se fere diretrizes de segurança. Seja direto e use um tom levemente inspirado em narradores de anime."},
+                {"role": "user", "content": f"Servidor: {nome}. Descrição: {descricao}"}
+            ]
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Erro na manifestação da IA: {e}"
+
+# --- FUNÇÃO DE IA REAL: GERAÇÃO DE IMAGEM ---
+def gerar_imagem_ia(prompt):
+    try:
+        response = client.images.generate(
+            model="dall-e-3",
+            prompt=f"Estilo Manga Dark Cyberpunk, alta fidelidade, referência sutil a estética anime: {prompt}",
+            n=1,
+            size="1024x1024"
+        )
+        return response.data[0].url
+    except Exception as e:
+        st.error(f"Falha ao invocar Aura IA: {e}")
+        return None
+
+# --- NAVEGAÇÃO ---
+with st.sidebar:
+    st.title("🌐 NEXUS")
+    
+    # Check de Admin
+    with st.expander("🔑 Acesso Overlord"):
+        input_pass = st.text_input("Senha", type="password")
+        if input_pass == ADMIN_PASSWORD:
+            st.session_state.user_role = "Admin"
+            st.success("O tempo parou. Bem-vindo, DIO.")
+
+    page = st.radio("Mover para:", ["Feed", "Conselho de Creators", "Aura IA (Gerador)", "Stripe Checkout"])
+
+# --- PÁGINA: CONSELHO (MARKETPLACE + IA) ---
+if page == "Conselho de Creators":
+    st.header("🗳️ Conselho de Servidores")
+    
+    if st.session_state.user_role in ["Creator", "Admin", "User"]: # Simplificado para teste
+        with st.form("nova_proposta"):
+            st.subheader("Manifestar Novo Servidor")
+            n = st.text_input("Nome do Servidor")
+            d = st.text_area("Descrição da Comunidade")
+            if st.form_submit_button("Enviar Proposta"):
+                # IA analisa no momento do envio
+                analise = analisar_proposta_com_gpt(n, d)
+                st.session_state.propostas.append({"nome": n, "desc": d, "status": "Pendente", "ai_eval": analise})
+                st.success("Proposta enviada ao conselho!")
+
+    st.divider()
+    
+    for p in st.session_state.propostas:
+        with st.container():
+            st.markdown(f"""<div class='proposal-box'>
+                <h3>{p['nome']} <span style='font-size:12px; color:orange;'>[{p['status']}]</span></h3>
+                <p>{p['desc']}</p>
+            </div>""", unsafe_allow_html=True)
+            
+            with st.expander("✨ Ver Veredito da Aura IA"):
+                st.write(p['ai_eval'])
+            
+            if st.session_state.user_role == "Admin" and p['status'] == "Pendente":
+                if st.button(f"Autorizar {p['nome']}"):
+                    p['status'] = "Aprovado"
+                    st.rerun()
+
+# --- PÁGINA: GERAÇÃO REAL ---
+elif page == "Aura IA (Gerador)":
+    st.header("🎨 Aura IA: Manifestação Visual")
+    p_img = st.text_input("O que deseja manifestar?")
+    if st.button("GERAR (ORA!)"):
+        url = gerar_imagem_ia(p_img)
+        if url:
+            st.image(url, caption="Manifestação concluída.")
+
+# --- PÁGINA: STRIPE (Lógica de Produção) ---
+elif page == "Stripe Checkout":
+    st.header("🚀 Upgrade: Nexus Creator")
+    st.write("US$ 5.00/mês")
+    
+    if st.button("Ir para Checkout Seguro"):
+        # Em produção, aqui você geraria a Checkout Session do Stripe
+        # session = stripe.checkout.Session.create(...)
+        # st.write(f"Redirecionando para: {session.url}")
+        st.info("Aqui o usuário é enviado ao Stripe. Após o pagamento, o Webhook da Vercel libera o acesso.")
