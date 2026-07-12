@@ -102,6 +102,14 @@ Extras do modo grátis: `JARVIS_CHAT_MODEL` (default `gemini-2.5-flash`) e `JARV
 | `JARVIS_MUSIC_VOLUME` | `0.12` | volume da música sob a narração (0 a 1) |
 | `TELEGRAM_BOT_TOKEN` | — | opcional: liga o companheiro no Telegram |
 | `TELEGRAM_CHAT_ID` | — | seu chat id (o bot te informa na primeira mensagem) |
+| `JARVIS_VAPID_FILE` | `server/vapid_private.pem` | chave das notificações push (gerada sozinha) |
+| `JARVIS_PUSH_SUBS_FILE` | `server/push_subs.json` | aparelhos inscritos nas notificações |
+
+### 🔔 Notificações nativas (Web Push)
+
+O app tem notificações push próprias — chegam no celular **mesmo com o app fechado**, sem nenhum serviço de terceiro. Ligue o toggle "🔔 Notifications" no painel (o navegador pede permissão uma vez) e pronto: aviso quando um vídeo é postado, quando há vídeo esperando revisão e quando o pipeline falha. As chaves VAPID são geradas sozinhas no primeiro boot; teste com `POST /push/test`.
+
+> Requisito da plataforma web: push (assim como o microfone) só funciona com o app servido em **HTTPS** (ou localhost). O jeito mais fácil de ter HTTPS apontando para o seu backend em casa é um túnel gratuito do Cloudflare (`cloudflared tunnel --url http://localhost:8741`) — você ganha uma URL https pública e abre `https://sua-url/app/` no celular.
 
 ### 📱 Telegram (opcional — segundo controle remoto)
 

@@ -310,6 +310,69 @@ async function reviewAction(action) {
   refreshStatus();
 }
 
+// ---------- Native push notifications ----------
+function b64ToBytes(base64) {
+  const pad = '='.repeat((4 - (base64.length % 4)) % 4);
+  const raw = atob((base64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(raw, (c) => c.charCodeAt(0));
+}
+
+function renderPush(on) {
+  const t = $('push-toggle');
+  t.textContent = on ? 'ON' : 'OFF';
+  t.classList.toggle('active', on);
+}
+
+async function refreshPushState() {
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    renderPush(!!(await reg.pushManager.getSubscription()));
+  } catch (_) {
+    renderPush(false);
+  }
+}
+
+async function togglePush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    speak('Push notifications are not supported here, sir. They require HTTPS.');
+    return;
+  }
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) {
+      await api('/push/unsubscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: existing.endpoint }),
+      });
+      await existing.unsubscribe();
+      renderPush(false);
+      speak('Notifications disabled, sir.');
+      return;
+    }
+    if ((await Notification.requestPermission()) !== 'granted') {
+      speak('I need notification permission for that, sir.');
+      return;
+    }
+    const { key } = await api('/push/key');
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: b64ToBytes(key),
+    });
+    await api('/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription: sub.toJSON() }),
+    });
+    renderPush(true);
+    speak('Very good, sir. I shall notify you even when the app is closed.');
+  } catch (e) {
+    renderPush(false);
+    speak('I could not enable notifications, sir.');
+  }
+}
+
 // ---------- Daily briefing ----------
 async function dailyBriefing() {
   caption.textContent = 'Compiling your briefing, sir…';
@@ -388,6 +451,7 @@ $('mode-auto').addEventListener('click', () => setMode('auto'));
 $('mode-manual').addEventListener('click', () => setMode('manual'));
 $('btn-generate-now').addEventListener('click', generateNow);
 $('review-toggle').addEventListener('click', () => setReview(!reviewMode));
+$('push-toggle').addEventListener('click', togglePush);
 $('btn-approve').addEventListener('click', () => reviewAction('approve'));
 $('btn-discard').addEventListener('click', () => reviewAction('discard'));
 $('btn-briefing').addEventListener('click', dailyBriefing);
@@ -416,6 +480,6 @@ $('btn-listen').addEventListener('click', () => {
 
 // ---------- Boot ----------
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.register('sw.js').then(refreshPushState).catch(() => {});
 }
 startRecognition('wake');

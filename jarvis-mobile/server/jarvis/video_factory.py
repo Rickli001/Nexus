@@ -11,7 +11,7 @@ import tempfile
 
 import requests
 
-from . import brain, providers, scriptwriter, state, telegram_bot, youtube
+from . import brain, notifications, providers, scriptwriter, state, youtube
 
 # moviepy 2.x renamed the import path and the clip mutators
 try:  # moviepy >= 2.0
@@ -158,7 +158,7 @@ def run_pipeline(style: str) -> dict:
                 }
                 state.update_state(pending_video=pending)
                 _stage("awaiting_review", script["title"])
-                telegram_bot.notify_video(
+                notifications.notify_video(
                     pending_path,
                     f"Awaiting your approval, sir: \"{script['title']}\". "
                     "Reply 'approve the video' or 'discard it'.",
@@ -184,11 +184,11 @@ def run_pipeline(style: str) -> dict:
         }
         state.append_history(entry)
         _stage("idle")
-        telegram_bot.notify(f"Sir, I've just posted \"{entry['title']}\" — {entry['url']}")
+        notifications.notify(f"Sir, I've just posted \"{entry['title']}\" — {entry['url']}")
         return entry
     except Exception as e:
         _stage("error", str(e)[:300])
-        telegram_bot.notify(f"Sir, the video pipeline hit a snag: {str(e)[:200]}")
+        notifications.notify(f"Sir, the video pipeline hit a snag: {str(e)[:200]}")
         raise
 
 
@@ -221,7 +221,7 @@ def approve_pending() -> dict:
     state.update_state(pending_video=None)
     state.append_history(entry)
     _stage("idle")
-    telegram_bot.notify(f"Very good, sir. Posted \"{entry['title']}\" — {entry['url']}")
+    notifications.notify(f"Very good, sir. Posted \"{entry['title']}\" — {entry['url']}")
     return entry
 
 

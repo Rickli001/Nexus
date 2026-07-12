@@ -9,3 +9,4 @@ google-auth-oauthlib
 pillow
 requests
 edge-tts
+pywebpush

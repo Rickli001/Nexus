@@ -18,6 +18,7 @@ from jarvis import (
     brain,
     briefing,
     coder,
+    push,
     scheduler,
     scriptwriter,
     state,
@@ -97,6 +98,14 @@ class CodeIn(BaseModel):
 
 class ReviewIn(BaseModel):
     action: str  # "approve" | "discard"
+
+
+class PushSubscribeIn(BaseModel):
+    subscription: dict
+
+
+class PushUnsubscribeIn(BaseModel):
+    endpoint: str
 
 
 def _status_payload():
@@ -206,6 +215,31 @@ def review(body: ReviewIn):
         return {"posted": False, "discarded": True}
     except RuntimeError as e:
         raise HTTPException(status_code=409, detail=str(e))
+
+
+@app.get("/push/key")
+def push_key():
+    return {"key": push.public_key()}
+
+
+@app.post("/push/subscribe")
+def push_subscribe(body: PushSubscribeIn):
+    if not body.subscription.get("endpoint"):
+        raise HTTPException(status_code=422, detail="invalid subscription")
+    push.subscribe(body.subscription)
+    return {"ok": True, "devices": push.device_count()}
+
+
+@app.post("/push/unsubscribe")
+def push_unsubscribe(body: PushUnsubscribeIn):
+    push.unsubscribe(body.endpoint)
+    return {"ok": True, "devices": push.device_count()}
+
+
+@app.post("/push/test")
+def push_test():
+    push.notify("J.A.R.V.I.S.", "Push notifications are operational, sir.")
+    return {"sent_to": push.device_count()}
 
 
 @app.get("/channel")

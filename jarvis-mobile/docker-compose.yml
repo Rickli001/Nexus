@@ -16,5 +16,7 @@ services:
       JARVIS_MUSIC_DIR: /data/music
       YT_TOKEN_FILE: /data/token.json
       YT_CLIENT_SECRET_FILE: /data/client_secret.json
+      JARVIS_VAPID_FILE: /data/vapid_private.pem
+      JARVIS_PUSH_SUBS_FILE: /data/push_subs.json
     volumes:
       - ./data:/data
