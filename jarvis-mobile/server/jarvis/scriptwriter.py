@@ -4,7 +4,7 @@ prompts and YouTube metadata for one short video, in a chosen style."""
 import json
 import random
 
-from . import brain
+from . import providers
 
 STYLES = {
     "tech_news": "an energetic tech-news brief about a current technology trend",
@@ -41,14 +41,22 @@ def write_script(style: str, recent_topics: list[str] | None = None) -> dict:
         '  "tags": array of 8-12 YouTube tags.'
     )
 
-    response = brain.client().chat.completions.create(
-        model="gpt-4o",
+    response = providers.client().chat.completions.create(
+        model=providers.CHAT_MODEL,
         response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": "You are a professional YouTube scriptwriter. Output valid JSON only."},
             {"role": "user", "content": prompt},
         ],
     )
-    script = json.loads(response.choices[0].message.content)
+    script = _parse_json(response.choices[0].message.content)
     script["style"] = style
     return script
+
+
+def _parse_json(text: str) -> dict:
+    """Tolerates markdown code fences some models wrap around JSON."""
+    text = text.strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[1].rsplit("```", 1)[0]
+    return json.loads(text)

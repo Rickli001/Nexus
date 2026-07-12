@@ -5,13 +5,8 @@ long-term memories, all from natural language. Also DALL-E image generation
 (feature parity with the desktop Nexus app)."""
 
 import json
-import os
 
-from openai import OpenAI
-
-from . import memory
-
-_client = None
+from . import memory, providers
 
 PERSONA = (
     "You are J.A.R.V.I.S. (Just A Rather Very Intelligent System), a highly "
@@ -115,16 +110,6 @@ TOOLS = [
 ]
 
 
-def client():
-    global _client
-    if _client is None:
-        api_key = os.environ.get("OPENAI_API_KEY")
-        if not api_key:
-            raise RuntimeError("OPENAI_API_KEY is not configured, sir.")
-        _client = OpenAI(api_key=api_key)
-    return _client
-
-
 def _execute_tool(name: str, args: dict) -> str:
     # Imported lazily to avoid circular imports (scheduler -> video_factory -> brain).
     from . import briefing, scheduler, state, video_factory, youtube
@@ -180,8 +165,8 @@ def chat(message: str) -> str:
 
     reply = None
     for _ in range(5):  # tool-call loop
-        response = client().chat.completions.create(
-            model="gpt-4o", messages=messages, tools=TOOLS
+        response = providers.client().chat.completions.create(
+            model=providers.CHAT_MODEL, messages=messages, tools=TOOLS
         )
         msg = response.choices[0].message
         if not msg.tool_calls:
@@ -200,10 +185,4 @@ def chat(message: str) -> str:
 
 
 def generate_image(prompt: str, size: str = "1024x1024") -> str:
-    response = client().images.generate(
-        model="dall-e-3",
-        prompt=prompt,
-        n=1,
-        size=size,
-    )
-    return response.data[0].url
+    return providers.generate_image(prompt, size=size)

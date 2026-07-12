@@ -92,7 +92,7 @@ def chat(body: ChatIn):
 @app.post("/code")
 def code(body: CodeIn):
     try:
-        return {"reply": coder.code(body.prompt), "model": coder.MODEL}
+        return {"reply": coder.code(body.prompt), "model": coder.active_model()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

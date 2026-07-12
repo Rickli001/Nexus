@@ -3,7 +3,7 @@ composed by GPT into a short spoken report in Jarvis's voice."""
 
 import json
 
-from . import brain, state, youtube
+from . import providers, state, youtube
 
 
 def gather() -> dict:
@@ -29,8 +29,8 @@ def gather() -> dict:
 
 def compose() -> str:
     data = gather()
-    response = brain.client().chat.completions.create(
-        model="gpt-4o",
+    response = providers.client().chat.completions.create(
+        model=providers.CHAT_MODEL,
         messages=[
             {
                 "role": "system",

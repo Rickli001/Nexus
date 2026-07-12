@@ -1,16 +1,20 @@
-"""J.A.R.V.I.S. coding mode — powered by Claude via the Anthropic SDK.
+"""J.A.R.V.I.S. coding mode.
 
+Preferred engine: Claude via the Anthropic SDK (needs ANTHROPIC_API_KEY).
 Model defaults to claude-fable-5 (override with CLAUDE_MODEL). On Fable 5,
 thinking is always on (no `thinking` parameter is sent) and a server-side
 fallback to claude-opus-4-8 is enabled so a safety-classifier decline on a
-benign request still gets answered. Requires ANTHROPIC_API_KEY.
+benign request still gets answered.
+
+In free mode (JARVIS_PROVIDER=free) without an Anthropic key, coding falls
+back to the free provider's chat model (Gemini).
 """
 
 import os
 
 import anthropic
 
-from . import memory
+from . import memory, providers
 
 MODEL = os.environ.get("CLAUDE_MODEL", "claude-fable-5")
 FALLBACK_MODEL = "claude-opus-4-8"
@@ -36,11 +40,30 @@ def client():
     return _client
 
 
+def active_model() -> str:
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        return MODEL
+    if providers.PROVIDER == "free":
+        return providers.CHAT_MODEL
+    return MODEL  # will raise a clear missing-key error in code()
+
+
 def code(prompt: str) -> str:
     facts = memory.get_facts()
     system = SYSTEM
     if facts:
         system += "\n\nThings you remember about the user:\n- " + "\n- ".join(facts)
+
+    # Free mode without an Anthropic key: use the free chat model instead.
+    if not os.environ.get("ANTHROPIC_API_KEY") and providers.PROVIDER == "free":
+        response = providers.client().chat.completions.create(
+            model=providers.CHAT_MODEL,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": prompt},
+            ],
+        )
+        return response.choices[0].message.content
 
     kwargs = dict(
         model=MODEL,

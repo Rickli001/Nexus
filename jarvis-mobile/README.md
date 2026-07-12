@@ -38,11 +38,36 @@ O `ffmpeg` precisa estar instalado no sistema (o moviepy usa ele para renderizar
 2. Baixe o JSON como `server/client_secret.json`.
 3. Rode `python authorize_youtube.py` e faça login com a conta dona do canal. Isso gera o `token.json` usado pelo servidor.
 
+### 💸 Modo grátis (custo zero)
+
+Não quer pagar nada? Rode com `JARVIS_PROVIDER=free`:
+
+```bash
+export JARVIS_PROVIDER=free
+export GEMINI_API_KEY="AIza..."   # grátis: https://aistudio.google.com/apikey (sem cartão)
+uvicorn main:app --host 0.0.0.0 --port 8741
+```
+
+O que muda por baixo dos panos:
+
+| Função | Modo pago | Modo grátis |
+|---|---|---|
+| Chat, roteiros, briefing | GPT-4o | **Gemini** (free tier, via endpoint compatível com OpenAI — function calling incluso) |
+| Imagens das cenas | DALL-E 3 | **Pollinations.ai** (sem chave) |
+| Narração dos vídeos | OpenAI TTS "onyx" | **edge-tts** voz `en-GB-RyanNeural` (britânica, gratuita) |
+| Code Mode | Claude (Anthropic) | Gemini (a menos que `ANTHROPIC_API_KEY` esteja setada — aí usa Claude mesmo no modo grátis) |
+
+Limitações honestas: o free tier do Gemini tem cota por minuto/dia (suficiente para chat + 12 roteiros/dia), e o Pollinations dá menos controle fino que o DALL-E. Para hospedar de graça: o PWA vai em Vercel/Netlify/GitHub Pages; o backend roda no seu PC ou numa VM do Oracle Cloud Free Tier.
+
+Extras do modo grátis: `JARVIS_CHAT_MODEL` (default `gemini-2.5-flash`) e `JARVIS_EDGE_VOICE` (default `en-GB-RyanNeural`; veja opções com `edge-tts --list-voices`).
+
 ### Variáveis de ambiente
 
 | Variável | Default | Descrição |
 |---|---|---|
-| `OPENAI_API_KEY` | — | obrigatória (GPT, DALL-E, TTS) |
+| `JARVIS_PROVIDER` | `paid` | `paid` (OpenAI) ou `free` (Gemini + Pollinations + edge-tts) |
+| `OPENAI_API_KEY` | — | obrigatória no modo `paid` (GPT, DALL-E, TTS) |
+| `GEMINI_API_KEY` | — | obrigatória no modo `free` (aistudio.google.com/apikey) |
 | `ANTHROPIC_API_KEY` | — | obrigatória para o Code Mode (Claude) — crie em console.anthropic.com |
 | `CLAUDE_MODEL` | `claude-fable-5` | modelo do Code Mode; com Fable 5 o fallback server-side para `claude-opus-4-8` fica ativo (se um pedido benigno for recusado pelo classificador, o Opus responde) |
 | `POST_INTERVAL_HOURS` | `2` | intervalo entre posts no modo AUTO |

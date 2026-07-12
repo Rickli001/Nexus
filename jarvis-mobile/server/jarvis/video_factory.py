@@ -11,7 +11,7 @@ import tempfile
 
 import requests
 
-from . import brain, scriptwriter, state, youtube
+from . import brain, providers, scriptwriter, state, youtube
 
 # moviepy 2.x renamed the import path and the clip mutators
 try:  # moviepy >= 2.0
@@ -46,11 +46,8 @@ def _download(url: str, dest: str):
 
 
 def _narrate(text: str, dest: str):
-    # "onyx" is the deepest English voice available — calm and composed.
-    with brain.client().audio.speech.with_streaming_response.create(
-        model="tts-1", voice="onyx", input=text
-    ) as response:
-        response.stream_to_file(dest)
+    # Paid: OpenAI "onyx" (deep, composed). Free: edge-tts British male.
+    providers.narrate(text, dest)
 
 
 def run_pipeline(style: str) -> dict:
