@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+state.json
+memory.json
+pending/
+music/
+token.json
+client_secret.json
+vapid_private.pem
+push_subs.json

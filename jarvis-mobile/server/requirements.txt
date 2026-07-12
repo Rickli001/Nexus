@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+openai
+anthropic
+moviepy
+apscheduler
+google-api-python-client
+google-auth-oauthlib
+pillow
+requests
+edge-tts
+pywebpush
+python-multipart

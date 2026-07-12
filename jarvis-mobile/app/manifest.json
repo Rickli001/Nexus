@@ -1,0 +1,24 @@
+{
+  "name": "J.A.R.V.I.S.",
+  "short_name": "JARVIS",
+  "description": "Just A Rather Very Intelligent System — mobile assistant and YouTube content engine",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#02060c",
+  "theme_color": "#02060c",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%2302060c'/%3E%3Ccircle cx='96' cy='96' r='60' fill='none' stroke='%2300e5ff' stroke-width='6'/%3E%3Ccircle cx='96' cy='96' r='26' fill='%2300e5ff'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%2302060c'/%3E%3Ccircle cx='256' cy='256' r='160' fill='none' stroke='%2300e5ff' stroke-width='16'/%3E%3Ccircle cx='256' cy='256' r='70' fill='%2300e5ff'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
