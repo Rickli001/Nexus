@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+openai
+moviepy
+apscheduler
+google-api-python-client
+google-auth-oauthlib
+pillow
+requests

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#02060c">
+  <title>J.A.R.V.I.S.</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2302060c'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%2300e5ff' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%2300e5ff'/%3E%3C/svg%3E">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== STANDBY SCREEN (waiting for wake word) ===== -->
+  <section id="standby" class="screen active">
+    <div class="standby-core">
+      <div class="pulse-ring"></div>
+      <div class="pulse-dot"></div>
+    </div>
+    <p class="standby-hint">Say <strong>"Hello, Jarvis"</strong> or<br>"Come on, time to wake up, Jarvis"</p>
+    <p id="mic-status" class="mic-status">initializing microphone…</p>
+    <button id="btn-manual-wake" class="ghost-btn">tap to wake manually</button>
+  </section>
+
+  <!-- ===== JARVIS ACTIVE SCREEN ===== -->
+  <section id="jarvis" class="screen">
+    <!-- Arc reactor / HUD -->
+    <div class="reactor">
+      <div class="ring r1"></div>
+      <div class="ring r2"></div>
+      <div class="ring r3"></div>
+      <div class="core" id="reactor-core"></div>
+    </div>
+
+    <div id="jarvis-caption" class="caption">At your service, sir.</div>
+
+    <!-- Conversation log -->
+    <div id="log" class="log"></div>
+
+    <!-- Input row -->
+    <div class="input-row">
+      <button id="btn-listen" class="round-btn" title="Speak">🎙️</button>
+      <input id="text-input" type="text" placeholder="Type a command…" autocomplete="off">
+      <button id="btn-send" class="round-btn">➤</button>
+    </div>
+
+    <!-- ===== CONTENT ENGINE PANEL ===== -->
+    <div class="panel">
+      <div class="panel-title">CONTENT ENGINE — YouTube</div>
+
+      <div class="mode-row">
+        <span>Mode</span>
+        <div class="mode-toggle">
+          <button id="mode-auto" class="mode-btn active">AUTO</button>
+          <button id="mode-manual" class="mode-btn">MANUAL</button>
+        </div>
+      </div>
+
+      <div id="style-picker" class="style-picker hidden">
+        <label for="style-select">Video style</label>
+        <select id="style-select">
+          <option value="tech_news">Tech News</option>
+          <option value="curiosities">Curiosities &amp; Facts</option>
+          <option value="motivation">Motivation</option>
+          <option value="science">Science Explained</option>
+          <option value="top5">Top 5 Lists</option>
+          <option value="mystery">Mystery Stories</option>
+        </select>
+        <button id="btn-generate-now" class="action-btn">GENERATE &amp; POST NOW</button>
+      </div>
+
+      <div id="pipeline-status" class="pipeline-status">
+        <div class="stat"><span class="stat-label">Status</span><span id="ps-state">—</span></div>
+        <div class="stat"><span class="stat-label">Next post</span><span id="ps-next">—</span></div>
+        <div class="stat"><span class="stat-label">Last video</span><span id="ps-last">—</span></div>
+      </div>
+
+      <div class="panel-title small">CHANNEL MONITOR</div>
+      <div id="channel-stats" class="pipeline-status">
+        <div class="stat"><span class="stat-label">Subscribers</span><span id="cs-subs">—</span></div>
+        <div class="stat"><span class="stat-label">Total views</span><span id="cs-views">—</span></div>
+        <div class="stat"><span class="stat-label">Videos</span><span id="cs-videos">—</span></div>
+      </div>
+    </div>
+
+    <button id="btn-sleep" class="ghost-btn">put Jarvis back to sleep</button>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
