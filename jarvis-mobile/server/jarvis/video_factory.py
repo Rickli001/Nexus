@@ -1,8 +1,12 @@
 """Video pipeline: script -> DALL-E scene images -> OpenAI TTS narration ->
-moviepy assembly (1080x1920 vertical) -> YouTube upload."""
+moviepy assembly (1080x1920 vertical) -> YouTube upload.
+
+With review mode on, the rendered video is held in PENDING_DIR and only
+uploaded after the user approves it in the app (or by voice)."""
 
 import datetime
 import os
+import shutil
 import tempfile
 
 import requests
@@ -22,6 +26,12 @@ def _with_duration(clip, seconds):
 
 def _with_audio(clip, audio):
     return clip.with_audio(audio) if hasattr(clip, "with_audio") else clip.set_audio(audio)
+
+
+PENDING_DIR = os.environ.get(
+    "JARVIS_PENDING_DIR",
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "pending"),
+)
 
 
 def _stage(stage, detail=""):
@@ -77,6 +87,24 @@ def run_pipeline(style: str) -> dict:
                 video_path, fps=24, codec="libx264", audio_codec="aac", logger=None
             )
 
+            if state.get_state().get("review_mode"):
+                # Hold for approval instead of uploading.
+                os.makedirs(PENDING_DIR, exist_ok=True)
+                pending_path = os.path.join(PENDING_DIR, "pending.mp4")
+                shutil.move(video_path, pending_path)
+                pending = {
+                    "path": pending_path,
+                    "title": script["title"],
+                    "description": script["description"],
+                    "tags": script.get("tags", []),
+                    "style": script["style"],
+                    "topic": script.get("topic", ""),
+                    "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                }
+                state.update_state(pending_video=pending)
+                _stage("awaiting_review", script["title"])
+                return pending
+
             _stage("uploading", script.get("title", ""))
             video_id = youtube.upload_video(
                 video_path,
@@ -99,3 +127,45 @@ def run_pipeline(style: str) -> dict:
     except Exception as e:
         _stage("error", str(e)[:300])
         raise
+
+
+def approve_pending() -> dict:
+    """Upload the video that is awaiting review."""
+    pending = state.get_state().get("pending_video")
+    if not pending or not os.path.exists(pending["path"]):
+        raise RuntimeError("There is no video awaiting review, sir.")
+    _stage("uploading", pending["title"])
+    try:
+        video_id = youtube.upload_video(
+            pending["path"],
+            title=pending["title"],
+            description=pending["description"],
+            tags=pending.get("tags", []),
+        )
+    except Exception as e:
+        _stage("awaiting_review", pending["title"])  # keep it reviewable
+        raise RuntimeError(f"Upload failed: {e}")
+    os.remove(pending["path"])
+    entry = {
+        "title": pending["title"],
+        "topic": pending.get("topic", ""),
+        "style": pending.get("style", ""),
+        "video_id": video_id,
+        "url": f"https://youtu.be/{video_id}",
+        "posted_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    }
+    state.update_state(pending_video=None)
+    state.append_history(entry)
+    _stage("idle")
+    return entry
+
+
+def discard_pending():
+    """Delete the video that is awaiting review without posting it."""
+    pending = state.get_state().get("pending_video")
+    if not pending:
+        raise RuntimeError("There is no video awaiting review, sir.")
+    if os.path.exists(pending["path"]):
+        os.remove(pending["path"])
+    state.update_state(pending_video=None)
+    _stage("idle")

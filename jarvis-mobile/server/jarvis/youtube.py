@@ -70,6 +70,27 @@ def upload_video(path: str, title: str, description: str, tags: list[str]) -> st
     return response["id"]
 
 
+def videos_stats(video_ids: list[str]) -> list[dict]:
+    """Views/likes/comments for a batch of videos (for the daily briefing)."""
+    response = (
+        get_service()
+        .videos()
+        .list(part="snippet,statistics", id=",".join(video_ids[:50]))
+        .execute()
+    )
+    out = []
+    for v in response.get("items", []):
+        stats = v.get("statistics", {})
+        out.append({
+            "title": v["snippet"]["title"],
+            "video_id": v["id"],
+            "views": stats.get("viewCount"),
+            "likes": stats.get("likeCount"),
+            "comments": stats.get("commentCount"),
+        })
+    return out
+
+
 def channel_stats() -> dict:
     response = get_service().channels().list(part="snippet,statistics", mine=True).execute()
     items = response.get("items", [])

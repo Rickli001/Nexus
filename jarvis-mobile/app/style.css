@@ -144,6 +144,45 @@ html, body {
 .stat { display: flex; justify-content: space-between; font-size: 13px; }
 .stat-label { color: #6c8aa0; }
 
+/* ---------- QUICK ACTIONS / CODE MODE / REVIEW ---------- */
+.quick-row {
+  display: flex; gap: 10px; width: 100%; max-width: 520px; margin-bottom: 14px;
+}
+.chip-btn {
+  flex: 1; padding: 10px; border-radius: 20px;
+  border: 1px solid var(--cyan-dim); background: #071726; color: var(--text);
+  font-size: 13px; cursor: pointer;
+}
+.chip-btn.active { background: var(--cyan); color: #02131c; font-weight: 700; }
+
+.panel.hidden, .code-output.hidden, .review-box.hidden { display: none; }
+
+#code-panel { margin-bottom: 14px; }
+#code-input {
+  width: 100%; background: #0a1420; border: 1px solid #14283a;
+  border-radius: 10px; padding: 10px 12px; color: var(--text);
+  font-size: 14px; resize: vertical; outline: none; margin-bottom: 10px;
+}
+#code-panel .action-btn { width: 100%; }
+.code-output {
+  margin-top: 12px; padding: 12px; background: #02090f;
+  border: 1px solid #14283a; border-radius: 10px;
+  font-size: 12px; line-height: 1.5; color: #b8f4ff;
+  white-space: pre-wrap; word-break: break-word;
+  max-height: 40vh; overflow-y: auto;
+}
+
+.review-row { margin-top: 12px; }
+.review-box {
+  margin-top: 14px; padding: 12px; border: 1px solid #3a2f0a;
+  border-radius: 10px; background: #0d0a02;
+}
+.review-title { font-size: 13px; margin-bottom: 10px; color: var(--gold); }
+#review-video { width: 100%; max-height: 46vh; border-radius: 8px; background: #000; }
+.review-actions { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+.review-actions .action-btn { flex: 1; }
+.ghost-btn.small { margin-top: 0; padding: 8px 14px; }
+
 .ghost-btn {
   margin-top: 20px; background: none; border: 1px dashed #24405a;
   color: #6c8aa0; padding: 9px 18px; border-radius: 20px; font-size: 12px; cursor: pointer;

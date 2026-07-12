@@ -174,6 +174,7 @@ async function handleUserMessage(message) {
     const reply = data.reply || data.detail || 'I seem to be having trouble reaching my servers, sir.';
     addMsg(reply, 'jarvis');
     speak(reply);
+    refreshStatus(); // voice commands may have changed mode/pipeline
   } catch (_) {
     const reply = 'I cannot reach the backend at the moment, sir. Do check the server address.';
     addMsg(reply, 'jarvis');
@@ -184,6 +185,8 @@ async function handleUserMessage(message) {
 // ---------- Content engine panel ----------
 let statusTimer = null;
 let currentMode = 'auto';
+let reviewMode = false;
+let pendingShownTitle = null;
 
 async function api(path, opts) {
   const res = await fetch(`${API_BASE}${path}`, opts);
@@ -208,10 +211,35 @@ async function setMode(mode) {
   } catch (_) {}
 }
 
+function renderReview(s) {
+  reviewMode = !!s.review_mode;
+  const toggle = $('review-toggle');
+  toggle.textContent = reviewMode ? 'ON' : 'OFF';
+  toggle.classList.toggle('active', reviewMode);
+
+  const box = $('review-box');
+  if (s.pending_video) {
+    box.classList.remove('hidden');
+    $('review-title').textContent = s.pending_video.title;
+    if (pendingShownTitle !== s.pending_video.title) {
+      pendingShownTitle = s.pending_video.title;
+      $('review-video').src = `${API_BASE}/pending/video?t=${Date.now()}`;
+      speak('Sir, a new video is ready for your review.');
+    }
+  } else {
+    box.classList.add('hidden');
+    if (pendingShownTitle) {
+      pendingShownTitle = null;
+      $('review-video').removeAttribute('src');
+    }
+  }
+}
+
 async function refreshStatus() {
   try {
     const s = await api('/status');
     renderMode(s.mode);
+    renderReview(s);
     if (s.style && s.mode === 'manual') $('style-select').value = s.style;
     $('ps-state').textContent = s.pipeline_stage || 'idle';
     $('ps-next').textContent = s.next_post_at
@@ -220,6 +248,71 @@ async function refreshStatus() {
     $('ps-last').textContent = s.last_video ? s.last_video.title : 'none yet';
   } catch (_) {
     $('ps-state').textContent = 'backend offline';
+  }
+}
+
+async function setReview(on) {
+  try {
+    const s = await api('/mode', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: currentMode, review: on }),
+    });
+    renderReview(s);
+  } catch (_) {}
+}
+
+async function reviewAction(action) {
+  try {
+    const r = await api('/review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action }),
+    });
+    if (r.posted) {
+      speak('Very good, sir. The video has been posted.');
+      addMsg(`Posted: ${r.video.title} — ${r.video.url}`, 'jarvis');
+    } else if (r.discarded) {
+      speak('As you wish, sir. The video has been discarded.');
+    } else if (r.detail) {
+      addMsg(r.detail, 'jarvis');
+    }
+  } catch (_) {
+    addMsg('The review action failed, sir.', 'jarvis');
+  }
+  refreshStatus();
+}
+
+// ---------- Daily briefing ----------
+async function dailyBriefing() {
+  caption.textContent = 'Compiling your briefing, sir…';
+  try {
+    const r = await api('/briefing');
+    const text = r.briefing || r.detail || 'The briefing is unavailable, sir.';
+    addMsg(text, 'jarvis');
+    speak(text);
+  } catch (_) {
+    speak('I could not compile the briefing, sir.');
+  }
+}
+
+// ---------- Code mode (Claude) ----------
+async function runCode() {
+  const prompt = $('code-input').value.trim();
+  if (!prompt) return;
+  const out = $('code-output');
+  out.classList.remove('hidden');
+  out.textContent = 'Working on it, sir…';
+  try {
+    const r = await api('/code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt }),
+    });
+    out.textContent = r.reply || r.detail || 'No response from the coding engine, sir.';
+    if (r.reply) speak('The code is ready, sir.');
+  } catch (_) {
+    out.textContent = 'The coding engine did not respond, sir.';
   }
 }
 
@@ -254,6 +347,16 @@ $('btn-sleep').addEventListener('click', goToSleep);
 $('mode-auto').addEventListener('click', () => setMode('auto'));
 $('mode-manual').addEventListener('click', () => setMode('manual'));
 $('btn-generate-now').addEventListener('click', generateNow);
+$('review-toggle').addEventListener('click', () => setReview(!reviewMode));
+$('btn-approve').addEventListener('click', () => reviewAction('approve'));
+$('btn-discard').addEventListener('click', () => reviewAction('discard'));
+$('btn-briefing').addEventListener('click', dailyBriefing);
+$('btn-code').addEventListener('click', () => {
+  const panel = $('code-panel');
+  panel.classList.toggle('hidden');
+  $('btn-code').classList.toggle('active', !panel.classList.contains('hidden'));
+});
+$('btn-run-code').addEventListener('click', runCode);
 
 $('btn-send').addEventListener('click', () => {
   handleUserMessage(textInput.value.trim());

@@ -7,6 +7,11 @@ Assistente mobile no estilo J.A.R.V.I.S. + motor de conteúdo automático para Y
 - **Content Engine**: gera roteiro (GPT), cenas (DALL-E), narração em inglês (OpenAI TTS, voz "onyx") e monta o vídeo vertical (moviepy), publicando **1 vídeo a cada 2 horas** no seu canal.
 - **Modo AUTO (padrão)**: o Jarvis escolhe o estilo sozinho. **Modo MANUAL**: você escolhe o estilo (Tech News, Curiosities, Motivation, Science, Top 5, Mystery) e pode disparar "Generate & Post Now".
 - **Channel Monitor**: inscritos, views e nº de vídeos do canal via YouTube Data API.
+- **Comandos de voz totais**: fale naturalmente — "switch to manual mode", "make a mystery video now", "status report", "how is the channel doing?" — e o Jarvis entende a intenção (function calling do GPT) e executa.
+- **Daily Briefing por voz**: botão 📋 (ou peça "morning briefing") — ele fala o crescimento do canal, a performance dos últimos vídeos (views/likes) e o status do motor de conteúdo.
+- **Modo revisão**: com "Review before posting" ligado, o vídeo é gerado e **espera sua aprovação**: você assiste o preview no app e toca em "Approve & Post" ou "Discard" (também funciona por voz: "approve the video").
+- **Memória persistente**: o Jarvis lembra do histórico de conversas e de fatos/preferências que você contar ("remember that my name is…") entre sessões.
+- **Code Mode (Claude)**: botão ⌨️ abre o modo de programação, movido pelo modelo **Claude (`claude-fable-5`)** via SDK da Anthropic — descreva o que precisa e receba código completo e funcional.
 
 ## Estrutura
 
@@ -38,10 +43,16 @@ O `ffmpeg` precisa estar instalado no sistema (o moviepy usa ele para renderizar
 | Variável | Default | Descrição |
 |---|---|---|
 | `OPENAI_API_KEY` | — | obrigatória (GPT, DALL-E, TTS) |
+| `ANTHROPIC_API_KEY` | — | obrigatória para o Code Mode (Claude) — crie em console.anthropic.com |
+| `CLAUDE_MODEL` | `claude-fable-5` | modelo do Code Mode; com Fable 5 o fallback server-side para `claude-opus-4-8` fica ativo (se um pedido benigno for recusado pelo classificador, o Opus responde) |
 | `POST_INTERVAL_HOURS` | `2` | intervalo entre posts no modo AUTO |
 | `YT_PRIVACY` | `private` | `private` / `unlisted` / `public` |
 | `YT_TOKEN_FILE` | `server/token.json` | caminho do token OAuth |
 | `JARVIS_STATE_FILE` | `server/state.json` | estado persistido (modo, histórico) |
+| `JARVIS_MEMORY_FILE` | `server/memory.json` | memória persistente (fatos + conversas) |
+| `JARVIS_PENDING_DIR` | `server/pending/` | onde vídeos aguardando revisão ficam guardados |
+
+> Nota sobre o Fable 5: exige retenção de dados de 30 dias na conta Anthropic (não funciona com zero data retention) e o custo é acima do tier Opus. Para trocar, basta `CLAUDE_MODEL=claude-opus-4-8`.
 
 ## 2. App mobile (PWA)
 

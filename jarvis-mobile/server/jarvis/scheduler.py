@@ -36,6 +36,9 @@ def _scheduled_job():
     if s["mode"] != "auto":
         log.info("Manual mode active; scheduled slot skipped.")
         return
+    if s.get("pending_video"):
+        log.info("A video is awaiting review; scheduled slot skipped.")
+        return
     _run_pipeline_locked(scriptwriter.pick_auto_style())
 
 

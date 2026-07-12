@@ -44,6 +44,20 @@
       <button id="btn-send" class="round-btn">➤</button>
     </div>
 
+    <!-- ===== QUICK ACTIONS ===== -->
+    <div class="quick-row">
+      <button id="btn-briefing" class="chip-btn">📋 Daily Briefing</button>
+      <button id="btn-code" class="chip-btn">⌨️ Code Mode</button>
+    </div>
+
+    <!-- ===== CODE MODE (Claude) ===== -->
+    <div id="code-panel" class="panel hidden">
+      <div class="panel-title">CODE MODE — powered by Claude</div>
+      <textarea id="code-input" rows="3" placeholder="Describe the code you need, sir…"></textarea>
+      <button id="btn-run-code" class="action-btn">GENERATE CODE</button>
+      <pre id="code-output" class="code-output hidden"></pre>
+    </div>
+
     <!-- ===== CONTENT ENGINE PANEL ===== -->
     <div class="panel">
       <div class="panel-title">CONTENT ENGINE — YouTube</div>
@@ -53,6 +67,21 @@
         <div class="mode-toggle">
           <button id="mode-auto" class="mode-btn active">AUTO</button>
           <button id="mode-manual" class="mode-btn">MANUAL</button>
+        </div>
+      </div>
+
+      <div class="mode-row review-row">
+        <span>Review before posting</span>
+        <button id="review-toggle" class="mode-btn">OFF</button>
+      </div>
+
+      <div id="review-box" class="review-box hidden">
+        <div class="panel-title small">⏸ AWAITING YOUR APPROVAL</div>
+        <p id="review-title" class="review-title"></p>
+        <video id="review-video" controls playsinline preload="metadata"></video>
+        <div class="review-actions">
+          <button id="btn-approve" class="action-btn">APPROVE &amp; POST</button>
+          <button id="btn-discard" class="ghost-btn small">discard</button>
         </div>
       </div>
 

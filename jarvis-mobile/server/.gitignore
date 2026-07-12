@@ -1,5 +1,7 @@
 __pycache__/
 *.pyc
 state.json
+memory.json
+pending/
 token.json
 client_secret.json

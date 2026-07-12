@@ -16,6 +16,8 @@ _DEFAULT = {
     "pipeline_stage": "idle",  # idle | writing_script | generating_scenes | narrating | rendering | uploading | error
     "pipeline_detail": "",
     "last_video": None,        # {"title", "video_id", "url", "style", "posted_at"}
+    "review_mode": False,      # when True, videos wait for approval before upload
+    "pending_video": None,     # {"path", "title", "description", "tags", "style", "topic", "created_at"}
     "history": [],
 }
 
