@@ -13,7 +13,18 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from jarvis import audience, brain, briefing, coder, scheduler, scriptwriter, state, video_factory, youtube
+from jarvis import (
+    audience,
+    brain,
+    briefing,
+    coder,
+    scheduler,
+    scriptwriter,
+    state,
+    telegram_bot,
+    video_factory,
+    youtube,
+)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -21,6 +32,7 @@ logging.basicConfig(level=logging.INFO)
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     scheduler.start()
+    telegram_bot.start()  # inert unless TELEGRAM_BOT_TOKEN is set
     yield
 
 

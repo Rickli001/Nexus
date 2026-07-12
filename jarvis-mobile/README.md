@@ -100,6 +100,12 @@ Extras do modo grátis: `JARVIS_CHAT_MODEL` (default `gemini-2.5-flash`) e `JARV
 | `JARVIS_PENDING_DIR` | `server/pending/` | onde vídeos aguardando revisão ficam guardados |
 | `JARVIS_MUSIC_DIR` | `server/music/` | pasta de trilhas `.mp3` para o fundo musical (vazia = sem música) |
 | `JARVIS_MUSIC_VOLUME` | `0.12` | volume da música sob a narração (0 a 1) |
+| `TELEGRAM_BOT_TOKEN` | — | opcional: liga o companheiro no Telegram |
+| `TELEGRAM_CHAT_ID` | — | seu chat id (o bot te informa na primeira mensagem) |
+
+### 📱 Telegram (opcional — segundo controle remoto)
+
+Módulo totalmente opcional (`jarvis/telegram_bot.py`): sem o token, nada muda. Com ele, o Jarvis te **avisa** quando posta um vídeo, quando o pipeline falha e quando há vídeo esperando revisão (mandando o próprio arquivo para você assistir no chat), e **obedece por mensagem** — qualquer texto no chat do bot vai para o mesmo cérebro do app ("switch to manual", "make a science video", "briefing", "approve the video"). Setup: fale com o **@BotFather** no Telegram → `/newbot` → copie o token para `TELEGRAM_BOT_TOKEN`; mande uma mensagem para o seu bot e ele responde com o seu chat id → coloque em `TELEGRAM_CHAT_ID` e reinicie. Só esse chat é obedecido; estranhos são ignorados.
 
 > Nota sobre o Fable 5: exige retenção de dados de 30 dias na conta Anthropic (não funciona com zero data retention) e o custo é acima do tier Opus. Para trocar, basta `CLAUDE_MODEL=claude-opus-4-8`.
 
