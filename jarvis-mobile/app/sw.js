@@ -1,4 +1,4 @@
-const CACHE = 'jarvis-shell-v3';
+const CACHE = 'jarvis-shell-v4';
 const SHELL = ['./index.html', './style.css', './app.js', './manifest.json'];
 
 self.addEventListener('install', (e) => {

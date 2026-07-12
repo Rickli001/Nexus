@@ -9,7 +9,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from jarvis import audience, brain, briefing, coder, scheduler, scriptwriter, state, video_factory, youtube
@@ -25,12 +26,39 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(title="J.A.R.V.I.S. Mobile API", lifespan=lifespan)
 
+# --- Access control ---
+# Set JARVIS_API_KEY to lock the API down; every request must then carry it
+# in the X-Jarvis-Key header (or ?key= for media URLs). Unset = open, for
+# local development only.
+API_KEY = os.environ.get("JARVIS_API_KEY")
+_PUBLIC_PREFIXES = ("/app",)  # the PWA shell itself is public; the API is not
+
+
+@app.middleware("http")
+async def require_api_key(request, call_next):
+    if (
+        API_KEY
+        and request.method != "OPTIONS"
+        and not request.url.path.startswith(_PUBLIC_PREFIXES)
+    ):
+        supplied = request.headers.get("x-jarvis-key") or request.query_params.get("key")
+        if supplied != API_KEY:
+            return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
+    return await call_next(request)
+
+
+# Added after the auth middleware so CORS headers are present on 401s too.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve the PWA from the same container at /app/ (single-box deploy).
+_APP_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "app")
+if os.path.isdir(_APP_DIR):
+    app.mount("/app", StaticFiles(directory=_APP_DIR, html=True), name="app")
 
 
 class ChatIn(BaseModel):

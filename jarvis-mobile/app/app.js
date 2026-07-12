@@ -5,7 +5,28 @@
 
 // Backend URL. Override without editing code:
 //   localStorage.setItem('jarvis_api', 'https://my-server.example.com')
-const API_BASE = localStorage.getItem('jarvis_api') || 'http://localhost:8741';
+// When the PWA is served by the backend itself (at /app/), same origin wins.
+const API_BASE =
+  localStorage.getItem('jarvis_api') ||
+  (location.pathname.startsWith('/app') ? location.origin : 'http://localhost:8741');
+
+// Access key (JARVIS_API_KEY on the server). Asked once, then remembered.
+let API_KEY = localStorage.getItem('jarvis_key') || '';
+
+function authHeaders(headers = {}) {
+  if (API_KEY) headers['X-Jarvis-Key'] = API_KEY;
+  return headers;
+}
+
+function askForKey() {
+  const k = prompt('Access key required, sir. Enter your JARVIS_API_KEY:');
+  if (k && k.trim()) {
+    API_KEY = k.trim();
+    localStorage.setItem('jarvis_key', API_KEY);
+    return true;
+  }
+  return false;
+}
 
 // ---------- DOM ----------
 const $ = (id) => document.getElementById(id);
@@ -165,12 +186,11 @@ async function handleUserMessage(message) {
   addMsg(message, 'user');
   caption.textContent = '…';
   try {
-    const res = await fetch(`${API_BASE}/chat`, {
+    const data = await api('/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message }),
     });
-    const data = await res.json();
     const reply = data.reply || data.detail || 'I seem to be having trouble reaching my servers, sir.';
     addMsg(reply, 'jarvis');
     speak(reply);
@@ -188,8 +208,13 @@ let currentMode = 'auto';
 let reviewMode = false;
 let pendingShownTitle = null;
 
-async function api(path, opts) {
-  const res = await fetch(`${API_BASE}${path}`, opts);
+async function api(path, opts = {}) {
+  opts.headers = authHeaders(opts.headers || {});
+  let res = await fetch(`${API_BASE}${path}`, opts);
+  if (res.status === 401 && askForKey()) {
+    opts.headers = authHeaders(opts.headers);
+    res = await fetch(`${API_BASE}${path}`, opts);
+  }
   return res.json();
 }
 
@@ -223,7 +248,9 @@ function renderReview(s) {
     $('review-title').textContent = s.pending_video.title;
     if (pendingShownTitle !== s.pending_video.title) {
       pendingShownTitle = s.pending_video.title;
-      $('review-video').src = `${API_BASE}/pending/video?t=${Date.now()}`;
+      // <video> can't send headers, so the key rides the query string here.
+      const keyParam = API_KEY ? `&key=${encodeURIComponent(API_KEY)}` : '';
+      $('review-video').src = `${API_BASE}/pending/video?t=${Date.now()}${keyParam}`;
       speak('Sir, a new video is ready for your review.');
     }
   } else {

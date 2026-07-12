@@ -27,14 +27,31 @@ jarvis-mobile/
 
 ## 1. Backend
 
+### 🐳 Jeito recomendado: Docker (um comando)
+
+```bash
+cd jarvis-mobile
+cp .env.example .env   # edite: JARVIS_API_KEY (senha do app) + chaves de IA
+docker compose up -d --build
+```
+
+Pronto: API em `http://seu-ip:8741` **e o app já servido em `http://seu-ip:8741/app/`** (um container só). O serviço reinicia sozinho se cair (`restart: unless-stopped`) e todo o estado (memória, histórico, token do YouTube, vídeos em revisão, músicas) fica persistido em `jarvis-mobile/data/` — coloque o `client_secret.json` lá e rode a autorização do YouTube uma vez com `docker compose exec jarvis python authorize_youtube.py`.
+
+### Manual (sem Docker)
+
 ```bash
 cd jarvis-mobile/server
 pip install -r requirements.txt
 export OPENAI_API_KEY="sk-..."
+export JARVIS_API_KEY="uma-senha-forte"
 uvicorn main:app --host 0.0.0.0 --port 8741
 ```
 
 O `ffmpeg` precisa estar instalado no sistema (o moviepy usa ele para renderizar).
+
+### 🔐 Segurança
+
+Com `JARVIS_API_KEY` definida, **toda** chamada à API exige o header `X-Jarvis-Key` — sem isso, qualquer pessoa com a URL controlaria seu canal e gastaria seus créditos. Na primeira vez que o app encontrar o servidor protegido, ele pede a senha e a guarda no aparelho. Sem a variável, a API fica aberta (use só para teste local).
 
 ### Autorizar o YouTube (uma vez)
 
@@ -69,6 +86,7 @@ Extras do modo grátis: `JARVIS_CHAT_MODEL` (default `gemini-2.5-flash`) e `JARV
 
 | Variável | Default | Descrição |
 |---|---|---|
+| `JARVIS_API_KEY` | — | senha de acesso da API (defina sempre que expor na internet) |
 | `JARVIS_PROVIDER` | `paid` | `paid` (OpenAI) ou `free` (Gemini + Pollinations + edge-tts) |
 | `OPENAI_API_KEY` | — | obrigatória no modo `paid` (GPT, DALL-E, TTS) |
 | `GEMINI_API_KEY` | — | obrigatória no modo `free` (aistudio.google.com/apikey) |

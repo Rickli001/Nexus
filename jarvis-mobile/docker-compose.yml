@@ -1,0 +1,20 @@
+services:
+  jarvis:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8741:8741"
+    env_file: .env
+    environment:
+      # Everything the robot must remember lives in ./data on the host,
+      # so containers can be rebuilt without losing state.
+      JARVIS_STATE_FILE: /data/state.json
+      JARVIS_MEMORY_FILE: /data/memory.json
+      JARVIS_PENDING_DIR: /data/pending
+      JARVIS_MUSIC_DIR: /data/music
+      YT_TOKEN_FILE: /data/token.json
+      YT_CLIENT_SECRET_FILE: /data/client_secret.json
+    volumes:
+      - ./data:/data
