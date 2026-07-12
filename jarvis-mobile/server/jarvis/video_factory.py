@@ -15,9 +15,9 @@ from . import brain, providers, scriptwriter, state, youtube
 
 # moviepy 2.x renamed the import path and the clip mutators
 try:  # moviepy >= 2.0
-    from moviepy import AudioFileClip, ImageClip, concatenate_videoclips
+    from moviepy import AudioFileClip, CompositeAudioClip, ImageClip, concatenate_videoclips
 except ImportError:  # moviepy 1.x
-    from moviepy.editor import AudioFileClip, ImageClip, concatenate_videoclips
+    from moviepy.editor import AudioFileClip, CompositeAudioClip, ImageClip, concatenate_videoclips
 
 
 def _with_duration(clip, seconds):
@@ -28,10 +28,30 @@ def _with_audio(clip, audio):
     return clip.with_audio(audio) if hasattr(clip, "with_audio") else clip.set_audio(audio)
 
 
+def _subclip(clip, start, end):
+    return clip.subclipped(start, end) if hasattr(clip, "subclipped") else clip.subclip(start, end)
+
+
+def _with_volume(clip, factor):
+    return (
+        clip.with_volume_scaled(factor)
+        if hasattr(clip, "with_volume_scaled")
+        else clip.volumex(factor)
+    )
+
+
 PENDING_DIR = os.environ.get(
     "JARVIS_PENDING_DIR",
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "pending"),
 )
+
+# Drop royalty-free .mp3 files here (e.g. from the YouTube Audio Library)
+# and every video gets a soft background track mixed under the narration.
+MUSIC_DIR = os.environ.get(
+    "JARVIS_MUSIC_DIR",
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "music"),
+)
+MUSIC_VOLUME = float(os.environ.get("JARVIS_MUSIC_VOLUME", "0.12"))
 
 
 def _stage(stage, detail=""):
@@ -48,6 +68,42 @@ def _download(url: str, dest: str):
 def _narrate(text: str, dest: str):
     # Paid: OpenAI "onyx" (deep, composed). Free: edge-tts British male.
     providers.narrate(text, dest)
+
+
+def _soundtrack(narration):
+    """Mix a random background track (if any) softly under the narration."""
+    import random
+
+    if not os.path.isdir(MUSIC_DIR):
+        return narration
+    tracks = [f for f in os.listdir(MUSIC_DIR) if f.lower().endswith((".mp3", ".wav", ".m4a"))]
+    if not tracks:
+        return narration
+    music = AudioFileClip(os.path.join(MUSIC_DIR, random.choice(tracks)))
+    music = _subclip(music, 0, min(music.duration, narration.duration))
+    music = _with_volume(music, MUSIC_VOLUME)
+    return CompositeAudioClip([narration, music])
+
+
+def _apply_thumbnail(video_id: str, thumbnail_prompt: str):
+    """Generate and set a custom thumbnail. Non-fatal on failure (e.g. the
+    channel isn't phone-verified yet)."""
+    if not thumbnail_prompt:
+        return
+    try:
+        size = "1792x1024" if providers.PROVIDER == "paid" else "1280x720"
+        url = providers.generate_image(
+            f"YouTube thumbnail, bold, high contrast, cinematic lighting, no text: {thumbnail_prompt}",
+            size=size,
+        )
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            _download(url, tmp.name)
+            youtube.set_thumbnail(video_id, tmp.name)
+        os.unlink(tmp.name)
+    except Exception as e:
+        import logging
+
+        logging.getLogger("jarvis.video").warning("Thumbnail skipped: %s", e)
 
 
 def run_pipeline(style: str) -> dict:
@@ -75,8 +131,9 @@ def run_pipeline(style: str) -> dict:
             _narrate(script["narration"], audio_path)
 
             _stage("rendering")
-            audio = AudioFileClip(audio_path)
-            per_scene = audio.duration / len(image_paths)
+            narration = AudioFileClip(audio_path)
+            audio = _soundtrack(narration)
+            per_scene = narration.duration / len(image_paths)
             clips = [_with_duration(ImageClip(p), per_scene) for p in image_paths]
             video = _with_audio(concatenate_videoclips(clips, method="compose"), audio)
             video_path = os.path.join(workdir, "final.mp4")
@@ -96,6 +153,7 @@ def run_pipeline(style: str) -> dict:
                     "tags": script.get("tags", []),
                     "style": script["style"],
                     "topic": script.get("topic", ""),
+                    "thumbnail_prompt": script.get("thumbnail_prompt", ""),
                     "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 }
                 state.update_state(pending_video=pending)
@@ -109,6 +167,7 @@ def run_pipeline(style: str) -> dict:
                 description=script["description"],
                 tags=script.get("tags", []),
             )
+            _apply_thumbnail(video_id, script.get("thumbnail_prompt", ""))
 
         entry = {
             "title": script["title"],
@@ -142,6 +201,7 @@ def approve_pending() -> dict:
     except Exception as e:
         _stage("awaiting_review", pending["title"])  # keep it reviewable
         raise RuntimeError(f"Upload failed: {e}")
+    _apply_thumbnail(video_id, pending.get("thumbnail_prompt", ""))
     os.remove(pending["path"])
     entry = {
         "title": pending["title"],

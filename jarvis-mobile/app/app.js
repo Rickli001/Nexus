@@ -296,6 +296,19 @@ async function dailyBriefing() {
   }
 }
 
+// ---------- Audience analysis ----------
+async function audienceReport() {
+  caption.textContent = 'Reading the comments, sir…';
+  try {
+    const r = await api('/comments');
+    const text = r.analysis || r.detail || 'The comment analysis is unavailable, sir.';
+    addMsg(text, 'jarvis');
+    speak(text);
+  } catch (_) {
+    speak('I could not read the comments, sir.');
+  }
+}
+
 // ---------- Code mode (Claude) ----------
 async function runCode() {
   const prompt = $('code-input').value.trim();
@@ -351,6 +364,7 @@ $('review-toggle').addEventListener('click', () => setReview(!reviewMode));
 $('btn-approve').addEventListener('click', () => reviewAction('approve'));
 $('btn-discard').addEventListener('click', () => reviewAction('discard'));
 $('btn-briefing').addEventListener('click', dailyBriefing);
+$('btn-comments').addEventListener('click', audienceReport);
 $('btn-code').addEventListener('click', () => {
   const panel = $('code-panel');
   panel.classList.toggle('hidden');

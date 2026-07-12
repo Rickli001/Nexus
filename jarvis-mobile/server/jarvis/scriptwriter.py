@@ -38,7 +38,9 @@ def write_script(style: str, recent_topics: list[str] | None = None) -> dict:
         "composition, no text in image) matching the narration in order,\n"
         '  "title": a catchy YouTube title under 90 characters,\n'
         '  "description": 2-3 sentence YouTube description with 3 hashtags,\n'
-        '  "tags": array of 8-12 YouTube tags.'
+        '  "tags": array of 8-12 YouTube tags,\n'
+        '  "thumbnail_prompt": one vivid image prompt for an eye-catching thumbnail '
+        "(bold, high contrast, single striking subject, no text in image)."
     )
 
     response = providers.client().chat.completions.create(

@@ -12,6 +12,10 @@ Assistente mobile no estilo J.A.R.V.I.S. + motor de conteúdo automático para Y
 - **Modo revisão**: com "Review before posting" ligado, o vídeo é gerado e **espera sua aprovação**: você assiste o preview no app e toca em "Approve & Post" ou "Discard" (também funciona por voz: "approve the video").
 - **Memória persistente**: o Jarvis lembra do histórico de conversas e de fatos/preferências que você contar ("remember that my name is…") entre sessões.
 - **Code Mode (Claude)**: botão ⌨️ abre o modo de programação, movido pelo modelo **Claude (`claude-fable-5`)** via SDK da Anthropic — descreva o que precisa e receba código completo e funcional.
+- **Análise de audiência**: botão 💬 (ou "analyze the comments") — o Jarvis lê os comentários recentes do canal, resume o sentimento, destaca o vídeo que mais gera conversa e sugere temas que a audiência pede.
+- **Estilo auto-otimizado**: no modo AUTO ele não sorteia mais o estilo — analisa as views dos últimos vídeos por estilo e favorece o que performa melhor (70% aproveita o campeão, 30% explora os outros).
+- **Thumbnails automáticas**: cada vídeo ganha uma thumbnail gerada por IA e enviada via API (requer canal verificado por telefone; se não estiver, é ignorado sem erro).
+- **Música de fundo**: solte arquivos `.mp3` royalty-free em `server/music/` (ex.: da YouTube Audio Library) e cada vídeo sai com trilha suave sob a narração (volume via `JARVIS_MUSIC_VOLUME`, default 0.12).
 
 ## Estrutura
 
@@ -76,6 +80,8 @@ Extras do modo grátis: `JARVIS_CHAT_MODEL` (default `gemini-2.5-flash`) e `JARV
 | `JARVIS_STATE_FILE` | `server/state.json` | estado persistido (modo, histórico) |
 | `JARVIS_MEMORY_FILE` | `server/memory.json` | memória persistente (fatos + conversas) |
 | `JARVIS_PENDING_DIR` | `server/pending/` | onde vídeos aguardando revisão ficam guardados |
+| `JARVIS_MUSIC_DIR` | `server/music/` | pasta de trilhas `.mp3` para o fundo musical (vazia = sem música) |
+| `JARVIS_MUSIC_VOLUME` | `0.12` | volume da música sob a narração (0 a 1) |
 
 > Nota sobre o Fable 5: exige retenção de dados de 30 dias na conta Anthropic (não funciona com zero data retention) e o custo é acima do tier Opus. Para trocar, basta `CLAUDE_MODEL=claude-opus-4-8`.
 

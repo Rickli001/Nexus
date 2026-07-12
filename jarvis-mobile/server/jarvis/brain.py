@@ -86,6 +86,14 @@ TOOLS = [
     {
         "type": "function",
         "function": {
+            "name": "analyze_comments",
+            "description": "Read the channel's recent YouTube comments and report sentiment, highlights and topic suggestions from the audience.",
+            "parameters": {"type": "object", "properties": {}},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "review_video",
             "description": "Approve (post) or discard the video currently awaiting review.",
             "parameters": {
@@ -112,7 +120,7 @@ TOOLS = [
 
 def _execute_tool(name: str, args: dict) -> str:
     # Imported lazily to avoid circular imports (scheduler -> video_factory -> brain).
-    from . import briefing, scheduler, state, video_factory, youtube
+    from . import audience, briefing, scheduler, state, video_factory, youtube
 
     try:
         if name == "set_mode":
@@ -139,6 +147,8 @@ def _execute_tool(name: str, args: dict) -> str:
             return json.dumps(youtube.channel_stats())
         if name == "get_briefing":
             return json.dumps({"briefing": briefing.compose()})
+        if name == "analyze_comments":
+            return json.dumps({"analysis": audience.analyze()})
         if name == "review_video":
             if args["action"] == "approve":
                 entry = video_factory.approve_pending()

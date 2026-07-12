@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from jarvis import brain, briefing, coder, scheduler, scriptwriter, state, video_factory, youtube
+from jarvis import audience, brain, briefing, coder, scheduler, scriptwriter, state, video_factory, youtube
 
 logging.basicConfig(level=logging.INFO)
 
@@ -101,6 +101,14 @@ def code(body: CodeIn):
 def get_briefing():
     try:
         return {"briefing": briefing.compose()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/comments")
+def comments():
+    try:
+        return {"analysis": audience.analyze()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

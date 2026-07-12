@@ -70,6 +70,42 @@ def upload_video(path: str, title: str, description: str, tags: list[str]) -> st
     return response["id"]
 
 
+def set_thumbnail(video_id: str, image_path: str):
+    """Custom thumbnail (requires a phone-verified YouTube channel)."""
+    get_service().thumbnails().set(
+        videoId=video_id, media_body=MediaFileUpload(image_path)
+    ).execute()
+
+
+def recent_comments(max_results: int = 50) -> list[dict]:
+    """Latest comments across the whole channel."""
+    svc = get_service()
+    channels = svc.channels().list(part="id", mine=True).execute().get("items", [])
+    if not channels:
+        return []
+    response = (
+        svc.commentThreads()
+        .list(
+            part="snippet",
+            allThreadsRelatedToChannelId=channels[0]["id"],
+            maxResults=min(max_results, 100),
+            order="time",
+            textFormat="plainText",
+        )
+        .execute()
+    )
+    out = []
+    for item in response.get("items", []):
+        top = item["snippet"]["topLevelComment"]["snippet"]
+        out.append({
+            "video_id": item["snippet"].get("videoId"),
+            "author": top.get("authorDisplayName"),
+            "text": (top.get("textDisplay") or "")[:500],
+            "likes": top.get("likeCount", 0),
+        })
+    return out
+
+
 def videos_stats(video_ids: list[str]) -> list[dict]:
     """Views/likes/comments for a batch of videos (for the daily briefing)."""
     response = (

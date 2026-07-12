@@ -9,7 +9,7 @@ import threading
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
-from . import scriptwriter, state, video_factory
+from . import optimizer, state, video_factory
 
 log = logging.getLogger("jarvis.scheduler")
 
@@ -39,7 +39,7 @@ def _scheduled_job():
     if s.get("pending_video"):
         log.info("A video is awaiting review; scheduled slot skipped.")
         return
-    _run_pipeline_locked(scriptwriter.pick_auto_style())
+    _run_pipeline_locked(optimizer.pick_style())
 
 
 def start():
