@@ -13,6 +13,7 @@ Assistente mobile no estilo J.A.R.V.I.S. + motor de conteúdo automático para Y
 - **Memória persistente**: o Jarvis lembra do histórico de conversas e de fatos/preferências que você contar ("remember that my name is…") entre sessões.
 - **Code Mode (Claude)**: botão ⌨️ abre o modo de programação, movido pelo modelo **Claude (`claude-fable-5`)** via SDK da Anthropic — descreva o que precisa e receba código completo e funcional.
 - **Análise de audiência**: botão 💬 (ou "analyze the comments") — o Jarvis lê os comentários recentes do canal, resume o sentimento, destaca o vídeo que mais gera conversa e sugere temas que a audiência pede.
+- **Image Studio**: botão 🎨 — **gera** imagens por descrição e **edita** fotos suas ("remove o fundo", "estilo anime"): escolha a foto da galeria, escreva a instrução e salve o resultado. Pago: `gpt-image-1`; grátis: `gemini-2.5-flash-image` (nano banana, no free tier do Gemini).
 - **Estilo auto-otimizado**: no modo AUTO ele não sorteia mais o estilo — analisa as views dos últimos vídeos por estilo e favorece o que performa melhor (70% aproveita o campeão, 30% explora os outros).
 - **Thumbnails automáticas**: cada vídeo ganha uma thumbnail gerada por IA e enviada via API (requer canal verificado por telefone; se não estiver, é ignorado sem erro).
 - **Música de fundo**: solte arquivos `.mp3` royalty-free em `server/music/` (ex.: da YouTube Audio Library) e cada vídeo sai com trilha suave sob a narração (volume via `JARVIS_MUSIC_VOLUME`, default 0.12).
@@ -102,6 +103,7 @@ Extras do modo grátis: `JARVIS_CHAT_MODEL` (default `gemini-2.5-flash`) e `JARV
 | `JARVIS_MUSIC_VOLUME` | `0.12` | volume da música sob a narração (0 a 1) |
 | `TELEGRAM_BOT_TOKEN` | — | opcional: liga o companheiro no Telegram |
 | `TELEGRAM_CHAT_ID` | — | seu chat id (o bot te informa na primeira mensagem) |
+| `JARVIS_IMAGE_MODEL` | `gemini-2.5-flash-image` | modelo de edição de imagem no modo grátis |
 | `JARVIS_VAPID_FILE` | `server/vapid_private.pem` | chave das notificações push (gerada sozinha) |
 | `JARVIS_PUSH_SUBS_FILE` | `server/push_subs.json` | aparelhos inscritos nas notificações |
 

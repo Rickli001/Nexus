@@ -172,6 +172,22 @@ html, body {
   max-height: 40vh; overflow-y: auto;
 }
 
+/* ---------- IMAGE STUDIO ---------- */
+#image-panel { margin-bottom: 14px; }
+.img-tabs { margin-bottom: 12px; width: fit-content; }
+.img-form { display: flex; flex-direction: column; gap: 10px; }
+.img-form.hidden { display: none; }
+.img-form textarea {
+  width: 100%; background: #0a1420; border: 1px solid #14283a;
+  border-radius: 10px; padding: 10px 12px; color: var(--text);
+  font-size: 14px; resize: vertical; outline: none;
+}
+#img-file { color: #6c8aa0; font-size: 13px; }
+.img-result { margin-top: 12px; text-align: center; }
+.img-result.hidden { display: none; }
+#img-output { max-width: 100%; border-radius: 10px; border: 1px solid #14283a; }
+.img-hint { font-size: 11px; color: #6c8aa0; margin-top: 6px; }
+
 .review-row { margin-top: 12px; }
 .review-box {
   margin-top: 14px; padding: 12px; border: 1px solid #3a2f0a;

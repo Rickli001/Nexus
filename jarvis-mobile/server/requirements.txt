@@ -10,3 +10,4 @@ pillow
 requests
 edge-tts
 pywebpush
+python-multipart

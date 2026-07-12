@@ -399,6 +399,62 @@ async function audienceReport() {
   }
 }
 
+// ---------- Image Studio ----------
+function showImgResult(src) {
+  $('img-output').src = src;
+  $('img-result').classList.remove('hidden');
+}
+
+async function imgGenerate() {
+  const promptText = $('img-gen-prompt').value.trim();
+  if (!promptText) return;
+  caption.textContent = 'Manifesting your image, sir…';
+  try {
+    const r = await api('/image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: promptText }),
+    });
+    if (r.url) {
+      showImgResult(r.url);
+      speak('Your image is ready, sir.');
+    } else {
+      addMsg(r.detail || 'Image generation failed, sir.', 'jarvis');
+    }
+  } catch (_) {
+    speak('The image engine did not respond, sir.');
+  }
+}
+
+async function imgEdit() {
+  const f = $('img-file').files[0];
+  const promptText = $('img-edit-prompt').value.trim();
+  if (!f) { speak('Choose an image first, sir.'); return; }
+  if (!promptText) { speak('Tell me how to alter it, sir.'); return; }
+  caption.textContent = 'Reworking your image, sir…';
+  const fd = new FormData();
+  fd.append('file', f);
+  fd.append('prompt', promptText);
+  try {
+    const r = await api('/image/edit', { method: 'POST', body: fd });
+    if (r.image) {
+      showImgResult(r.image);
+      speak('The edit is complete, sir.');
+    } else {
+      addMsg(r.detail || 'Image editing failed, sir.', 'jarvis');
+    }
+  } catch (_) {
+    speak('The image engine did not respond, sir.');
+  }
+}
+
+function imgTab(mode) {
+  $('img-tab-gen').classList.toggle('active', mode === 'gen');
+  $('img-tab-edit').classList.toggle('active', mode === 'edit');
+  $('img-gen-form').classList.toggle('hidden', mode !== 'gen');
+  $('img-edit-form').classList.toggle('hidden', mode !== 'edit');
+}
+
 // ---------- Code mode (Claude) ----------
 async function runCode() {
   const prompt = $('code-input').value.trim();
@@ -462,6 +518,15 @@ $('btn-code').addEventListener('click', () => {
   $('btn-code').classList.toggle('active', !panel.classList.contains('hidden'));
 });
 $('btn-run-code').addEventListener('click', runCode);
+$('btn-image').addEventListener('click', () => {
+  const panel = $('image-panel');
+  panel.classList.toggle('hidden');
+  $('btn-image').classList.toggle('active', !panel.classList.contains('hidden'));
+});
+$('img-tab-gen').addEventListener('click', () => imgTab('gen'));
+$('img-tab-edit').addEventListener('click', () => imgTab('edit'));
+$('btn-img-gen').addEventListener('click', imgGenerate);
+$('btn-img-edit').addEventListener('click', imgEdit);
 
 $('btn-send').addEventListener('click', () => {
   handleUserMessage(textInput.value.trim());

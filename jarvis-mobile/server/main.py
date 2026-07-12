@@ -3,11 +3,12 @@
 Run:  uvicorn main:app --host 0.0.0.0 --port 8741
 """
 
+import base64
 import logging
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -18,6 +19,7 @@ from jarvis import (
     brain,
     briefing,
     coder,
+    providers,
     push,
     scheduler,
     scriptwriter,
@@ -166,6 +168,16 @@ def comments():
 def image(body: ImageIn):
     try:
         return {"url": brain.generate_image(body.prompt)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/image/edit")
+async def image_edit(file: UploadFile = File(...), prompt: str = Form(...)):
+    try:
+        data = await file.read()
+        out, mime = providers.edit_image(data, file.content_type or "image/png", prompt)
+        return {"image": f"data:{mime};base64,{base64.b64encode(out).decode()}"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

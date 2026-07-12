@@ -46,9 +46,32 @@
 
     <!-- ===== QUICK ACTIONS ===== -->
     <div class="quick-row">
-      <button id="btn-briefing" class="chip-btn">📋 Briefing</button>
-      <button id="btn-comments" class="chip-btn">💬 Audience</button>
+      <button id="btn-briefing" class="chip-btn">📋 Brief</button>
+      <button id="btn-comments" class="chip-btn">💬 Fans</button>
       <button id="btn-code" class="chip-btn">⌨️ Code</button>
+      <button id="btn-image" class="chip-btn">🎨 Image</button>
+    </div>
+
+    <!-- ===== IMAGE STUDIO ===== -->
+    <div id="image-panel" class="panel hidden">
+      <div class="panel-title">IMAGE STUDIO</div>
+      <div class="mode-toggle img-tabs">
+        <button id="img-tab-gen" class="mode-btn active">GENERATE</button>
+        <button id="img-tab-edit" class="mode-btn">EDIT</button>
+      </div>
+      <div id="img-gen-form" class="img-form">
+        <textarea id="img-gen-prompt" rows="2" placeholder="Describe the image, sir…"></textarea>
+        <button id="btn-img-gen" class="action-btn">GENERATE IMAGE</button>
+      </div>
+      <div id="img-edit-form" class="img-form hidden">
+        <input type="file" id="img-file" accept="image/*">
+        <textarea id="img-edit-prompt" rows="2" placeholder="How shall I alter it? e.g. remove the background…"></textarea>
+        <button id="btn-img-edit" class="action-btn">EDIT IMAGE</button>
+      </div>
+      <div id="img-result" class="img-result hidden">
+        <img id="img-output" alt="result">
+        <p class="img-hint">long-press the image to save it, sir</p>
+      </div>
     </div>
 
     <!-- ===== CODE MODE (Claude) ===== -->
