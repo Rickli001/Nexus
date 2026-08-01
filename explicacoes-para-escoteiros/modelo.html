@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Troque a descrição abaixo por um resumo do seu tema -->
+  <meta name="description" content="RESUMO DO TEMA em uma frase.">
+  <!-- Troque o título abaixo pelo nome do seu tema -->
+  <title>NOME DO TEMA — Explicações para Escoteiros</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div>
+        <h1>Explicações para Escoteiros</h1>
+        <p class="subtitle">Temas importantes, explicados de forma simples e direta.</p>
+      </div>
+    </div>
+  </header>
+
+  <!--
+    ABAS: cada botão abre uma seção da página.
+    - O texto do botão é o nome da aba.
+    - O data-tab deve ser IGUAL ao id da <section> correspondente lá embaixo.
+    - Adicione ou remova botões conforme o número de seções do seu tema.
+  -->
+  <nav class="tabs" aria-label="Seções desta explicação">
+    <a class="voltar" href="index.html">← Todas as explicações</a>
+    <button class="tab-btn active" data-tab="introducao">Introdução</button>
+    <button class="tab-btn" data-tab="secao-2">Nome da Seção 2</button>
+    <button class="tab-btn" data-tab="secao-3">Nome da Seção 3</button>
+  </nav>
+
+  <main>
+
+    <!-- Primeira seção: precisa ter class="tab-panel active" -->
+    <section id="introducao" class="tab-panel active">
+      <h2>Título da introdução</h2>
+      <p>Apresente o tema aqui, em linguagem simples e direta.</p>
+
+      <!-- Citação (opcional): -->
+      <blockquote class="citacao">
+        <p>“Uma citação relacionada ao tema.”</p>
+        <footer>— Autor da citação</footer>
+      </blockquote>
+
+      <!-- Caixa de destaque (opcional): -->
+      <div class="card destaque">
+        <p><strong>Algo importante</strong> que merece destaque.</p>
+      </div>
+    </section>
+
+    <!-- Demais seções: apenas class="tab-panel" (sem "active") -->
+    <section id="secao-2" class="tab-panel">
+      <h2>Título da seção 2</h2>
+      <p>Conteúdo da seção 2.</p>
+      <ul>
+        <li>Listas ajudam a manter o texto direto.</li>
+        <li>Use <strong>negrito</strong> para o que é essencial.</li>
+      </ul>
+    </section>
+
+    <section id="secao-3" class="tab-panel">
+      <h2>Título da seção 3</h2>
+      <p>Conteúdo da seção 3.</p>
+
+      <!-- Caixa de atenção/alerta (opcional): -->
+      <div class="card atencao">
+        <p><strong>Atenção:</strong> use esta caixa para avisos sérios.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>Explicações para Escoteiros — feito por escoteiros, para escoteiros. Sempre Alerta!</p>
+  </footer>
+
+  <!-- O script cuida das abas automaticamente. Não precisa mexer nele. -->
+  <script src="script.js"></script>
+</body>
+</html>
