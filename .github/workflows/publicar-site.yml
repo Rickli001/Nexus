@@ -1,0 +1,44 @@
+name: Publicar site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Publica apenas o site, deixando de fora o código do Nexus.
+      - name: Montar pasta do site
+        run: |
+          mkdir -p site
+          cp index.html site/
+          cp -r explicacoes-para-escoteiros site/
+
+      # enablement: true liga o GitHub Pages sozinho, sem precisar mexer
+      # nas configurações do repositório.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
