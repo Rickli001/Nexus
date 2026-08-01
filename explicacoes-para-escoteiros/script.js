@@ -99,6 +99,10 @@ const eventos = [
 ];
 
 const timeline = document.querySelector('.timeline');
+
+// Só monta a linha do tempo nas páginas que têm uma
+if (timeline) {
+
 const detailIcon = document.getElementById('timeline-detail-icon');
 const detailTitle = document.getElementById('timeline-detail-title');
 const detailText = document.getElementById('timeline-detail-text');
@@ -162,3 +166,5 @@ document.addEventListener('keydown', function (e) {
 
 // Começa mostrando o primeiro evento
 mostrarEvento(0);
+
+}

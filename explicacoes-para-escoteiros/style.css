@@ -82,6 +82,54 @@ body {
   border-bottom-color: var(--verde);
 }
 
+.voltar {
+  align-self: center;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.95rem;
+  color: var(--texto-suave);
+  text-decoration: none;
+  border-right: 1px solid var(--borda);
+  margin-right: 0.5rem;
+}
+
+.voltar:hover { color: var(--verde); text-decoration: underline; }
+
+/* ===== Catálogo de explicações (página inicial) ===== */
+.catalogo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.card-tema {
+  display: block;
+  margin: 0;
+  text-decoration: none;
+  color: var(--texto);
+}
+
+.card-tema h3 { margin-top: 0; }
+
+a.card-tema:hover {
+  border-color: var(--verde-medio);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.ler-mais {
+  color: var(--verde);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.card-tema.em-breve {
+  background: transparent;
+  border-style: dashed;
+  color: var(--texto-suave);
+}
+
+.card-tema.em-breve h3 { color: var(--texto-suave); }
+
 /* ===== Conteúdo ===== */
 main {
   max-width: 960px;
